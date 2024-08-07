@@ -2,6 +2,7 @@ import asyncio
 import random
 import matplotlib.pyplot as plt
 import numpy as np
+from ollama import Ollama  # Assuming this is the library interface
 
 # Define shapes and their drawing functions
 def draw_circle(ax, color):
@@ -19,6 +20,17 @@ def draw_triangle(ax, color):
                             color=color)
     ax.add_artist(triangle)
 
+async def get_ai_model_output():
+    # Initialize Ollama model
+    model = Ollama("YOUR_MODEL_ID")
+    response = await model.predict("Generate a random shape and color")
+    
+    # Parse the response (assuming the model returns JSON)
+    shape = response['shape']
+    color = response['color']
+    
+    return shape, color
+
 async def generate_image():
     shapes = ['circle', 'square', 'triangle']
     colors = ['red', 'green', 'blue', 'yellow', 'purple', 'orange']
@@ -28,8 +40,13 @@ async def generate_image():
     ax.set_ylim(0, 1)
 
     for _ in range(random.randint(1, 5)):  # Generate 1 to 5 shapes
-        shape = random.choice(shapes)
-        color = random.choice(colors)
+        shape, color = await get_ai_model_output()
+        
+        if shape not in shapes:
+            shape = random.choice(shapes)
+        if color not in colors:
+            color = random.choice(colors)
+            
         if shape == 'circle':
             draw_circle(ax, color)
         elif shape == 'square':
